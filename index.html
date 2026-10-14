@@ -2570,7 +2570,11 @@ async function loadFarmerData(farmerId) {
 async function handleLogin(email, password) {
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error || !data.user) {
-    showAuthMessage(error?.message || 'Invalid email or password');
+    const raw = error?.message || 'Invalid email or password';
+    const message = /email not confirmed/i.test(raw)
+      ? 'Email not confirmed. In Supabase Dashboard, disable Authentication → Sign In / Providers → Email → Confirm email for direct sign-in, or confirm this account using the email link.'
+      : raw;
+    showAuthMessage(message);
     return false;
   }
   const user = data.user;
@@ -2604,7 +2608,10 @@ async function handleRegister(data) {
   if (!result.session) {
     state.isRegistering = false;
     render();
-    showAuthMessage('Account created. Check your email to confirm it, then sign in.', false);
+    showAuthMessage(
+      'Account created, but email confirmation is ON in Supabase. To allow direct sign-in, disable Confirm email in Supabase Dashboard → Authentication → Sign In / Providers → Email. Then register again with a new email or confirm this account.',
+      false
+    );
     return true;
   }
   const user = result.user;
@@ -2612,9 +2619,16 @@ async function handleRegister(data) {
     id: user.id, email: user.email, name: data.name, farmName: data.farmName,
     phone: data.phone || '', address: data.address || '', language: 'english'
   };
+  // Ensure the profile is present even if the database signup trigger was added later.
+  const { error: profileError } = await supabaseClient.from('dairy_profiles').upsert({
+    id: user.id, name: data.name, farm_name: data.farmName,
+    phone: data.phone || '', address: data.address || '', language: 'english'
+  }, { onConflict: 'id' });
+  if (profileError) console.error('Profile sync failed:', profileError);
   state.isLoggedIn = true;
   await loadFarmerData(user.id);
   render();
+  showToast('Account created. Your dairy data will sync to Supabase.');
   return true;
 }
 
