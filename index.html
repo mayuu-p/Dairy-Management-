@@ -1687,11 +1687,11 @@ function renderMain() {
         <span class="navbar-title">${state.currentFarmer.farmName}</span>
         <div class="rate-badge">
           🥛 Rate: ₹${state.currentRate}/L
-          <button class="btn btn-ghost btn-sm" onclick="state.showModal='editRate';render()">✏️</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="state.showModal='editRate';render()">✏️</button>
         </div>
       </div>
       <div style="position:relative">
-        <button class="profile-btn" onclick="state.showProfileMenu=!state.showProfileMenu;render()">
+        <button type="button" class="profile-btn" onclick="state.showProfileMenu=!state.showProfileMenu;render()">
           👤 <span>${state.currentFarmer.name}</span>
         </button>
         ${state.showProfileMenu ? `
@@ -1702,17 +1702,17 @@ function renderMain() {
           </div>
           <div style="padding:8px 16px;border-bottom:1px solid var(--border)">
             <div style="font-size:13px;font-weight:600;margin-bottom:6px">Language / भाषा</div>
-            <button class="lang-btn ${state.currentFarmer.language==='english'?'active':''}" onclick="setLanguage('english')">🇺🇸 English</button>
-            <button class="lang-btn ${state.currentFarmer.language==='hindi'?'active':''}" onclick="setLanguage('hindi')">🇮🇳 हिन्दी</button>
+            <button type="button" class="lang-btn ${state.currentFarmer.language==='english'?'active':''}" onclick="setLanguage('english')">🇺🇸 English</button>
+            <button type="button" class="lang-btn ${state.currentFarmer.language==='hindi'?'active':''}" onclick="setLanguage('hindi')">🇮🇳 हिन्दी</button>
           </div>
-          <button class="profile-menu-item" onclick="confirmLogout()">🚪 ${t.logout}</button>
+          <button type="button" class="profile-menu-item" onclick="confirmLogout()">🚪 ${t.logout}</button>
         </div>` : ''}
       </div>
     </div>
   </nav>
   <div class="tabs">
     ${tabs.map(tab => `
-      <button class="tab-btn ${state.activeTab === tab.id ? 'active' : ''}" onclick="state.activeTab='${tab.id}';render()">
+      <button type="button" class="tab-btn ${state.activeTab === tab.id ? 'active' : ''}" onclick="state.activeTab='${tab.id}';render()">
         ${tab.icon} ${tab.label}
       </button>
     `).join('')}
@@ -1772,10 +1772,10 @@ function renderDashboard() {
     </div>
   </div>
   <div class="grid-4 mb-6">
-    <button class="btn btn-primary btn-tall" onclick="state.showModal='milk';render()">🥛 Add Milk</button>
-    <button class="btn btn-outline btn-tall" onclick="state.showModal='expense';render()">💰 Add Expense</button>
-    <button class="btn btn-outline btn-tall" onclick="exportToPDF()">📥 ${t.export} PDF</button>
-    <button class="btn btn-outline btn-tall" onclick="shareOnWhatsApp()">📱 Share Report</button>
+    <button type="button" class="btn btn-primary btn-tall" onclick="state.showModal='milk';render()">🥛 Add Milk</button>
+    <button type="button" class="btn btn-outline btn-tall" onclick="state.showModal='expense';render()">💰 Add Expense</button>
+    <button type="button" class="btn btn-outline btn-tall" onclick="exportToPDF()">📥 ${t.export} PDF</button>
+    <button type="button" class="btn btn-outline btn-tall" onclick="shareOnWhatsApp()">📱 Share Report</button>
   </div>
   <div class="grid-3">
     <div class="card">
@@ -1820,8 +1820,8 @@ function renderCows() {
   <div class="section-header">
     <h2 class="section-title">${t.cows}</h2>
     <div class="section-actions">
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='cow';render()">➕ ${t.addNew}</button>
-      ${state.cows.length > 0 ? `<button class="btn btn-outline" onclick="shareCowReport()">📱 Share All</button>` : ''}
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='cow';render()">➕ ${t.addNew}</button>
+      ${state.cows.length > 0 ? `<button type="button" class="btn btn-outline" onclick="shareCowReport()">📱 Share All</button>` : ''}
     </div>
   </div>
   ${state.cows.length === 0 ? `
@@ -1829,7 +1829,7 @@ function renderCows() {
       <div class="empty-icon">🐄</div>
       <h3 class="empty-title">No Cows Added</h3>
       <p class="empty-desc">Start by adding your first cow profile</p>
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='cow';render()">➕ Add First Cow</button>
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='cow';render()">➕ Add First Cow</button>
     </div></div></div>` : `
     <div class="grid-3">
       ${state.cows.map(cow => {
@@ -1850,8 +1850,8 @@ function renderCows() {
           <div class="cow-card-header">
             <div><div class="cow-name">${cow.name}</div><div class="cow-tag">Tag: ${cow.tagNo}</div></div>
             <div>
-              <button class="btn btn-ghost btn-sm" onclick="state.editingItem=state.cows.find(c=>c.id==='${cow.id}');state.showModal='cow';render()">✏️</button>
-              <button class="btn btn-ghost btn-sm" onclick="deleteItem('${cow.id}','cow')">🗑️</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="state.editingItem=state.cows.find(c=>c.id==='${cow.id}');state.showModal='cow';render()">✏️</button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="deleteItem('${cow.id}','cow')">🗑️</button>
             </div>
           </div>
           <div class="cow-detail"><span class="cow-detail-label">Breed:</span><span>${cow.breed}</span></div>
@@ -1878,8 +1878,8 @@ function renderMilk() {
   <div class="section-header">
     <h2 class="section-title">${t.milk}</h2>
     <div class="section-actions">
-      <button class="btn btn-primary" onclick="state.showModal='milk';render()">➕ Add Entry</button>
-      <button class="btn btn-outline" onclick="shareMilkReport()">📱 ${t.share}</button>
+      <button type="button" class="btn btn-primary" onclick="state.showModal='milk';render()">➕ Add Entry</button>
+      <button type="button" class="btn btn-outline" onclick="shareMilkReport()">📱 ${t.share}</button>
     </div>
   </div>
   <div class="card">
@@ -1889,7 +1889,7 @@ function renderMilk() {
           <div class="empty-icon">🥛</div>
           <h3 class="empty-title">No Milk Entries</h3>
           <p class="empty-desc">Start recording your daily milk production</p>
-          <button class="btn btn-primary" onclick="state.showModal='milk';render()">➕ Add First Entry</button>
+          <button type="button" class="btn btn-primary" onclick="state.showModal='milk';render()">➕ Add First Entry</button>
         </div>` : `
         <div class="table-container">
           <table>
@@ -1901,7 +1901,7 @@ function renderMilk() {
                   <td>${e.date}</td><td>${cow?.name || 'All Cows'}</td><td class="capitalize">${e.session}</td>
                   <td>${e.litres}L</td><td>${e.fatPercent}%</td><td>${e.snfPercent}%</td>
                   <td>₹${e.rate}</td><td class="font-bold">₹${e.total}</td>
-                  <td><button class="btn btn-ghost btn-sm" onclick="deleteItem('${e.id}','milk')">🗑️</button></td>
+                  <td><button type="button" class="btn btn-ghost btn-sm" onclick="deleteItem('${e.id}','milk')">🗑️</button></td>
                 </tr>`;
               }).join('')}
             </tbody>
@@ -1924,8 +1924,8 @@ function renderExpenses() {
   <div class="section-header">
     <h2 class="section-title">${t.expenses}</h2>
     <div class="section-actions">
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='expense';render()">➕ ${t.addExpense}</button>
-      <button class="btn btn-outline" onclick="shareExpenseReport()">📱 ${t.share}</button>
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='expense';render()">➕ ${t.addExpense}</button>
+      <button type="button" class="btn btn-outline" onclick="shareExpenseReport()">📱 ${t.share}</button>
     </div>
   </div>
   <div class="grid-4 mb-6">
@@ -1946,7 +1946,7 @@ function renderExpenses() {
         <div class="empty-icon">💰</div>
         <h3 class="empty-title">No Expenses Added</h3>
         <p class="empty-desc">Start managing your farm expenses</p>
-        <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='expense';render()">➕ Add First Expense</button>
+        <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='expense';render()">➕ Add First Expense</button>
       </div>` : `
       <div class="table-container">
         <table>
@@ -1958,8 +1958,8 @@ function renderExpenses() {
                 <td>${e.date}</td><td>${cat?.icon||''} ${cat?.label||e.category}</td><td>${e.description}</td>
                 <td class="text-danger font-bold">₹${e.amount}</td><td>${e.recipient||'-'}</td>
                 <td>
-                  <button class="btn btn-ghost btn-sm" onclick="state.editingItem=state.expenses.find(x=>x.id==='${e.id}');state.showModal='expense';render()">✏️</button>
-                  <button class="btn btn-ghost btn-sm" onclick="deleteItem('${e.id}','expense')">🗑️</button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="state.editingItem=state.expenses.find(x=>x.id==='${e.id}');state.showModal='expense';render()">✏️</button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="deleteItem('${e.id}','expense')">🗑️</button>
                 </td>
               </tr>`;
             }).join('')}
@@ -1981,7 +1981,7 @@ function renderLabour() {
   <div class="section-header">
     <h2 class="section-title">${t.labour}</h2>
     <div class="section-actions">
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='labour';render()">➕ ${t.addLabour}</button>
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='labour';render()">➕ ${t.addLabour}</button>
     </div>
   </div>
   ${state.labour.length === 0 ? `
@@ -1989,7 +1989,7 @@ function renderLabour() {
       <div class="empty-icon">👷</div>
       <h3 class="empty-title">No Workers Added</h3>
       <p class="empty-desc">Start managing your farm workers</p>
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='labour';render()">➕ Add First Worker</button>
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='labour';render()">➕ Add First Worker</button>
     </div></div></div>` : `
     <div class="card"><div class="card-body">
       <div class="grid-3">
@@ -1998,8 +1998,8 @@ function renderLabour() {
             <div class="worker-header">
               <div><div class="worker-name">${w.name}</div><div class="worker-phone">📞 ${w.phone}</div></div>
               <div>
-                <button class="btn btn-ghost btn-sm" onclick="state.editingItem=state.labour.find(x=>x.id==='${w.id}');state.showModal='labour';render()">✏️</button>
-                <button class="btn btn-ghost btn-sm" onclick="deleteItem('${w.id}','labour')">🗑️</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="state.editingItem=state.labour.find(x=>x.id==='${w.id}');state.showModal='labour';render()">✏️</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="deleteItem('${w.id}','labour')">🗑️</button>
               </div>
             </div>
             <div class="cow-detail"><span class="cow-detail-label">Daily Wage:</span><span>₹${w.dailyWage}</span></div>
@@ -2018,7 +2018,7 @@ function renderBuyers() {
   <div class="section-header">
     <h2 class="section-title">${t.buyers}</h2>
     <div class="section-actions">
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='buyer';render()">➕ ${t.addBuyer}</button>
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='buyer';render()">➕ ${t.addBuyer}</button>
     </div>
   </div>
   ${state.buyers.length === 0 ? `
@@ -2026,7 +2026,7 @@ function renderBuyers() {
       <div class="empty-icon">🚛</div>
       <h3 class="empty-title">No Buyers Added</h3>
       <p class="empty-desc">Start managing your milk buyers</p>
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='buyer';render()">➕ Add First Buyer</button>
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='buyer';render()">➕ Add First Buyer</button>
     </div></div></div>` : `
     <div class="card"><div class="card-body">
       <div class="table-container">
@@ -2038,8 +2038,8 @@ function renderBuyers() {
               <td>₹${b.ratePerLiter}</td><td class="capitalize">${b.contractType}</td>
               <td><span class="badge ${b.isActive?'badge-success':'badge-danger'}">${b.isActive?'Active':'Inactive'}</span></td>
               <td>
-                <button class="btn btn-ghost btn-sm" onclick="state.editingItem=state.buyers.find(x=>x.id==='${b.id}');state.showModal='buyer';render()">✏️</button>
-                <button class="btn btn-ghost btn-sm" onclick="deleteItem('${b.id}','buyer')">🗑️</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="state.editingItem=state.buyers.find(x=>x.id==='${b.id}');state.showModal='buyer';render()">✏️</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="deleteItem('${b.id}','buyer')">🗑️</button>
               </td>
             </tr>`).join('')}
           </tbody>
@@ -2057,7 +2057,7 @@ function renderPayments() {
   <div class="section-header">
     <h2 class="section-title">${t.payments}</h2>
     <div class="section-actions">
-      <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='payment';render()">➕ ${t.addPayment}</button>
+      <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='payment';render()">➕ ${t.addPayment}</button>
     </div>
   </div>
   <div class="grid-3 mb-6">
@@ -2071,7 +2071,7 @@ function renderPayments() {
         <div class="empty-icon">💳</div>
         <h3 class="empty-title">No Payments Recorded</h3>
         <p class="empty-desc">Track your income and expenses</p>
-        <button class="btn btn-primary" onclick="state.editingItem=null;state.showModal='payment';render()">➕ Add First Payment</button>
+        <button type="button" class="btn btn-primary" onclick="state.editingItem=null;state.showModal='payment';render()">➕ Add First Payment</button>
       </div>` : `
       <div class="table-container">
         <table>
@@ -2084,8 +2084,8 @@ function renderPayments() {
               <td class="${p.type==='income'?'text-success':'text-danger'} font-bold">${p.type==='income'?'+':'-'}₹${p.amount}</td>
               <td class="capitalize">${p.mode}</td><td>${p.invoiceId||'-'}</td>
               <td>
-                <button class="btn btn-ghost btn-sm" onclick="state.editingItem=state.payments.find(x=>x.id==='${p.id}');state.showModal='payment';render()">✏️</button>
-                <button class="btn btn-ghost btn-sm" onclick="deleteItem('${p.id}','payment')">🗑️</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="state.editingItem=state.payments.find(x=>x.id==='${p.id}');state.showModal='payment';render()">✏️</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="deleteItem('${p.id}','payment')">🗑️</button>
               </td>
             </tr>`).join('')}
           </tbody>
@@ -2104,8 +2104,8 @@ function renderReports() {
   <div class="section-header">
     <h2 class="section-title">${t.reports}</h2>
     <div class="section-actions">
-      <button class="btn btn-outline" onclick="exportToPDF()">📥 ${t.export} PDF</button>
-      <button class="btn btn-outline" onclick="shareAllReports()">📱 ${t.shareAllReports}</button>
+      <button type="button" class="btn btn-outline" onclick="exportToPDF()">📥 ${t.export} PDF</button>
+      <button type="button" class="btn btn-outline" onclick="shareAllReports()">📱 ${t.shareAllReports}</button>
     </div>
   </div>
   <div class="grid-4 mb-6">
@@ -2143,7 +2143,7 @@ function renderCowModal() {
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title">🐄 ${item ? 'Edit Cow' : 'Add New Cow'}</div>
-        <button class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
+        <button type="button" class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
       </div>
       <div class="modal-body">
         <form id="cowForm">
@@ -2215,7 +2215,7 @@ function renderMilkModal() {
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title">🥛 Add Milk Entry</div>
-        <button class="modal-close" onclick="state.showModal=null;render()">✕</button>
+        <button type="button" class="modal-close" onclick="state.showModal=null;render()">✕</button>
       </div>
       <div class="modal-body">
         <form id="milkForm">
@@ -2255,7 +2255,7 @@ function renderExpenseModal() {
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title">💰 ${item ? 'Edit Expense' : 'Add New Expense'}</div>
-        <button class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
+        <button type="button" class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
       </div>
       <div class="modal-body">
         <form id="expenseForm">
@@ -2286,7 +2286,7 @@ function renderLabourModal() {
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title">👷 ${item ? 'Edit Worker' : 'Add New Worker'}</div>
-        <button class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
+        <button type="button" class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
       </div>
       <div class="modal-body">
         <form id="labourForm">
@@ -2319,7 +2319,7 @@ function renderBuyerModal() {
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title">🚛 ${item ? 'Edit Buyer' : 'Add New Buyer'}</div>
-        <button class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
+        <button type="button" class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
       </div>
       <div class="modal-body">
         <form id="buyerForm">
@@ -2365,7 +2365,7 @@ function renderPaymentModal() {
     <div class="modal">
       <div class="modal-header">
         <div class="modal-title">💳 ${item ? 'Edit Payment' : 'Add New Payment'}</div>
-        <button class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
+        <button type="button" class="modal-close" onclick="state.showModal=null;state.editingItem=null;render()">✕</button>
       </div>
       <div class="modal-body">
         <form id="paymentForm">
@@ -2409,7 +2409,7 @@ function renderEditRateModal() {
     <div class="modal" style="max-width:400px">
       <div class="modal-header">
         <div class="modal-title">✏️ Edit Milk Rate</div>
-        <button class="modal-close" onclick="state.showModal=null;render()">✕</button>
+        <button type="button" class="modal-close" onclick="state.showModal=null;render()">✕</button>
       </div>
       <div class="modal-body">
         <form id="rateForm">
@@ -2435,8 +2435,8 @@ function renderConfirmDialog() {
         <div class="confirm-title">${t.deleteTitle}</div>
         <div class="confirm-desc">${t.confirmDelete}</div>
         <div class="confirm-actions">
-          <button class="btn btn-outline" onclick="state.showModal=null;state.confirmAction=null;render()">${t.cancel}</button>
-          <button class="btn btn-danger" onclick="if(state.confirmAction)state.confirmAction()">Confirm</button>
+          <button type="button" class="btn btn-outline" onclick="state.showModal=null;state.confirmAction=null;render()">${t.cancel}</button>
+          <button type="button" class="btn btn-danger" onclick="if(state.confirmAction)state.confirmAction()">Confirm</button>
         </div>
       </div>
     </div>
