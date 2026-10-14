@@ -1224,7 +1224,7 @@ function handleLogin(email, password) {
   const farmer = farmers.find(f => f.email === email);
   if (farmer && farmer.password === password) {
     if (state.rememberMe) {
-      localStorage.setItem('dairy_remembered', JSON.stringify({email, password}));
+      localStorage.setItem('dairy_remembered', JSON.stringify({email}));
     } else {
       localStorage.removeItem('dairy_remembered');
     }
@@ -1443,7 +1443,7 @@ function render() {
 // ===== AUTH SCREEN =====
 function renderAuth() {
   const t = getT();
-  const remembered = JSON.parse(localStorage.getItem('dairy_remembered') || 'null');
+  const remembered = JSON.parse(localStorage.getItem('dairy_remembered') || 'null') || (localStorage.getItem('dairy_last_email') ? {email: localStorage.getItem('dairy_last_email')} : null);
   
   if (state.isRegistering) {
     return `
@@ -1525,7 +1525,7 @@ function renderAuth() {
         <div class="form-group">
           <label class="form-label">${t.password}</label>
           <div class="form-input-icon"><span class="icon">🔒</span>
-            <input class="form-input" type="password" name="password" placeholder="Enter password" required value="${remembered?.password || ''}">
+            <input class="form-input" type="password" name="password" placeholder="Enter password" required value="">
           </div>
         </div>
         <div class="form-group checkbox-group">
@@ -2366,7 +2366,7 @@ function attachEvents() {
         document.getElementById('authError').textContent = 'Passwords do not match';
         return;
       }
-      const result = handleRegister({
+      handleRegister({
         name: fd.get('name'), email: fd.get('email'), password: fd.get('password'),
         phone: fd.get('phone')||'', address: fd.get('address')||'', farmName: fd.get('farmName')
       });
@@ -2517,19 +2517,163 @@ function initHyperAnimations() {
   });
 }
 
-// ===== INIT =====
-function init() {
-  const savedFarmer = localStorage.getItem('dairy_currentFarmer');
-  if (savedFarmer) {
-    state.currentFarmer = JSON.parse(savedFarmer);
-    state.isLoggedIn = true;
-    loadFarmerData(state.currentFarmer.id);
+// ===== SUPABASE CLOUD AUTH + SYNC =====
+const SUPABASE_URL = 'https://txyfyuxpaltpvyzuvlur.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-xAxP3b_ZpK-TGGRIHV-hg_W7CV7HXG';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function showAuthMessage(message, isError = true) {
+  const node = document.getElementById('authError');
+  if (node) {
+    node.textContent = message;
+    node.style.color = isError ? 'var(--danger)' : 'var(--success)';
+  } else {
+    alert(message);
+  }
+}
+
+async function saveData(key, data) {
+  if (!state.currentFarmer?.id) return;
+  // Keep a local cache for fast rendering, while Supabase remains the source of truth.
+  localStorage.setItem(`dairy_${key}_${state.currentFarmer.id}`, JSON.stringify(data));
+  const { error } = await supabaseClient.from('dairy_data').upsert({
+    user_id: state.currentFarmer.id,
+    data_key: key,
+    data: data,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'user_id,data_key' });
+  if (error) {
+    console.error('Supabase save failed:', error);
+    showToast('Cloud sync failed. Check connection and try again.', 'error');
+  }
+}
+
+async function loadFarmerData(farmerId) {
+  const { data, error } = await supabaseClient.from('dairy_data')
+    .select('data_key,data').eq('user_id', farmerId);
+  if (error) {
+    console.error('Supabase load failed:', error);
+    showToast('Could not load cloud data. Please refresh and sign in again.', 'error');
+    return;
+  }
+  const values = Object.fromEntries((data || []).map(row => [row.data_key, row.data]));
+  state.cows = values.cows || [];
+  state.milkEntries = values.milk || [];
+  state.expenses = values.expenses || [];
+  state.labour = values.labour || [];
+  state.buyers = values.buyers || [];
+  state.payments = values.payments || [];
+  state.currentRate = Number(values.milkRate ?? 35);
+}
+
+async function handleLogin(email, password) {
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error || !data.user) {
+    showAuthMessage(error?.message || 'Invalid email or password');
+    return false;
+  }
+  const user = data.user;
+  const { data: profile } = await supabaseClient.from('dairy_profiles')
+    .select('*').eq('id', user.id).maybeSingle();
+  state.currentFarmer = {
+    id: user.id,
+    email: user.email,
+    name: profile?.name || user.user_metadata?.name || user.email.split('@')[0],
+    farmName: profile?.farm_name || user.user_metadata?.farmName || 'My Dairy Farm',
+    phone: profile?.phone || user.user_metadata?.phone || '',
+    address: profile?.address || user.user_metadata?.address || '',
+    language: profile?.language || 'english'
+  };
+  state.isLoggedIn = true;
+  localStorage.removeItem('dairy_currentFarmer');
+  localStorage.setItem('dairy_last_email', email);
+  await loadFarmerData(user.id);
+  render();
+  return true;
+}
+
+async function handleRegister(data) {
+  const { data: result, error } = await supabaseClient.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: { data: { name: data.name, farmName: data.farmName, phone: data.phone || '', address: data.address || '' } }
+  });
+  if (error) return error.message;
+  if (!result.user) return 'Account could not be created. Please try again.';
+  if (!result.session) {
+    state.isRegistering = false;
+    render();
+    showAuthMessage('Account created. Check your email to confirm it, then sign in.', false);
+    return true;
+  }
+  const user = result.user;
+  state.currentFarmer = {
+    id: user.id, email: user.email, name: data.name, farmName: data.farmName,
+    phone: data.phone || '', address: data.address || '', language: 'english'
+  };
+  state.isLoggedIn = true;
+  await loadFarmerData(user.id);
+  render();
+  return true;
+}
+
+async function handleLogout() {
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) console.error('Sign out error:', error);
+  state.isLoggedIn = false;
+  state.currentFarmer = null;
+  state.showProfileMenu = false;
+  state.activeTab = 'dashboard';
+  state.cows = []; state.milkEntries = []; state.expenses = [];
+  state.labour = []; state.buyers = []; state.payments = [];
+  localStorage.removeItem('dairy_currentFarmer');
+  render();
+}
+
+function showToast(message, type = 'success') {
+  let host = document.getElementById('dairy-toast-host');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'dairy-toast-host';
+    host.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:5000;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:min(340px,calc(100vw - 28px))';
+    document.body.appendChild(host);
+  }
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.cssText = `padding:11px 14px;border-radius:10px;color:white;background:${type === 'error' ? '#b91c1c' : '#166534'};box-shadow:0 8px 24px #0002;font-size:13px;animation:fadeInUp .2s ease`;
+  host.appendChild(toast);
+  setTimeout(() => toast.remove(), 2600);
+}
+
+async function initializeSupabaseApp() {
+  try {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error) throw error;
+    if (session?.user) {
+      const user = session.user;
+      const { data: profile } = await supabaseClient.from('dairy_profiles')
+        .select('*').eq('id', user.id).maybeSingle();
+      state.currentFarmer = {
+        id: user.id, email: user.email,
+        name: profile?.name || user.user_metadata?.name || user.email.split('@')[0],
+        farmName: profile?.farm_name || user.user_metadata?.farmName || 'My Dairy Farm',
+        phone: profile?.phone || user.user_metadata?.phone || '',
+        address: profile?.address || user.user_metadata?.address || '',
+        language: profile?.language || 'english'
+      };
+      state.isLoggedIn = true;
+      await loadFarmerData(user.id);
+    }
+  } catch (err) {
+    console.error('Supabase initialization failed:', err);
+    showToast('Cloud connection issue. Please refresh the page.', 'error');
   }
   render();
   initHyperAnimations();
 }
 
-init();
+// ===== INIT =====
+initializeSupabaseApp();
 
 </script>
 </body>
