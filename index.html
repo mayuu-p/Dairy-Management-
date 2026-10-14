@@ -1106,6 +1106,81 @@ button:active, .btn:active, .tab-btn:active, a:active,
   .card:active, .stat-card:active { transform: scale(0.97) !important; }
 }
 
+
+/* ===== RESPONSIVE POLISH + QUIET INTERACTIONS ===== */
+.btn-primary:hover { animation: none; }
+.btn:hover, .btn-primary:hover, .btn-ghost:hover, .tab-btn:hover,
+.profile-btn:hover, .profile-menu-item:hover, .badge:hover {
+  transform: none;
+}
+.card, .stat-card, .tab-btn, .btn, .profile-btn {
+  transition-duration: .16s;
+}
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+@media (max-width: 768px) {
+  .navbar-inner { gap: 10px; padding: 10px 12px; height: auto; min-height: 60px; }
+  .navbar-brand { gap: 8px; flex: 1 1 auto; min-width: 0; flex-wrap: wrap; }
+  .navbar-logo { font-size: 24px; animation: none; }
+  .navbar-title { font-size: 16px; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rate-badge { margin-left: 0; padding: 4px 8px; font-size: 12px; gap: 5px; }
+  .profile-btn { padding: 8px; white-space: nowrap; }
+  .profile-btn span { max-width: 22vw; overflow: hidden; text-overflow: ellipsis; }
+  .tabs { padding: 0 8px; gap: 2px; scrollbar-width: thin; }
+  .tab-btn { padding: 12px 10px; font-size: 12px; }
+  .content { padding: 16px 12px; }
+  .section-title { font-size: 20px; }
+  .section-header { align-items: flex-start; }
+  .section-actions { width: 100%; }
+  .section-actions .btn { flex: 1 1 auto; }
+  .card-header { padding: 14px 16px; }
+  .card-body { padding: 14px; }
+  .stat-card { padding: 14px; gap: 10px; }
+  .stat-icon { width: 40px; height: 40px; font-size: 20px; flex: 0 0 auto; }
+  .stat-value { font-size: 21px; }
+  .btn-tall { min-height: 58px; height: auto; padding: 12px 8px; }
+  .modal-overlay { padding: 10px; align-items: flex-end; }
+  .modal { max-height: 88dvh; border-radius: 16px 16px 10px 10px; animation: modalSlideIn .18s ease-out; }
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 14px 16px; }
+  .auth-container { padding: 14px; animation: none; }
+  .auth-card { padding: 24px 20px; animation: fadeInScale .2s ease-out; }
+  .auth-card:hover { transform: none; }
+  .form-group { animation: none; }
+  .empty-state { padding: 32px 12px; }
+  .empty-icon { animation: none; }
+  .table-container { max-width: 100%; -webkit-overflow-scrolling: touch; }
+  th, td { padding: 9px 8px; white-space: nowrap; }
+}
+@media (max-width: 600px) {
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .stat-card { min-width: 0; align-items: flex-start; }
+  .stat-label { font-size: 11px; }
+  .stat-value { font-size: clamp(17px, 5vw, 21px); overflow-wrap: anywhere; }
+  .btn-tall { font-size: 12px; }
+  .navbar-title { max-width: 38vw; }
+  .rate-badge { font-size: 11px; }
+  .auth-card { max-width: 440px; width: 100%; }
+  .confirm-dialog { padding: 24px 16px; }
+  .confirm-actions { flex-wrap: wrap; }
+  .confirm-actions .btn { flex: 1 1 120px; }
+}
+@media (max-width: 380px) {
+  .navbar-inner { align-items: flex-start; }
+  .navbar-brand { gap: 6px; }
+  .navbar-title { max-width: 44vw; font-size: 14px; }
+  .rate-badge { width: 100%; margin-left: 30px; }
+  .profile-btn { font-size: 12px; }
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
+
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1444,12 +1519,16 @@ function shareAllReports() {
 // ===== RENDER ENGINE =====
 function render() {
   const app = document.getElementById('app');
+  const scrollX = window.scrollX || 0;
+  const scrollY = window.scrollY || 0;
   if (!state.isLoggedIn) {
     app.innerHTML = renderAuth();
   } else {
     app.innerHTML = renderMain();
   }
   attachEvents();
+  // Keep the app feeling like a single-page app instead of jumping to the top.
+  requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
 }
 
 // ===== AUTH SCREEN =====
@@ -2484,13 +2563,6 @@ function attachEvents() {
     render();
   });
 
-  // Close profile menu on outside click
-  document.addEventListener('click', (e) => {
-    if (state.showProfileMenu && !e.target.closest('.profile-btn') && !e.target.closest('.profile-menu')) {
-      state.showProfileMenu = false;
-      render();
-    }
-  });
 }
 
 // ===== HYPER TOUCH/CLICK ANIMATION SYSTEM =====
@@ -2726,8 +2798,16 @@ async function initializeSupabaseApp() {
     showToast('Cloud connection issue. Please refresh the page.', 'error');
   }
   render();
-  initHyperAnimations();
 }
+
+// Dismiss the profile menu without re-rendering the entire app.
+document.addEventListener('click', (e) => {
+  if (e.target.closest('a[href="#"]')) e.preventDefault();
+  if (state.showProfileMenu && !e.target.closest('.profile-btn') && !e.target.closest('.profile-menu')) {
+    state.showProfileMenu = false;
+    document.querySelector('.profile-menu')?.remove();
+  }
+});
 
 // ===== INIT =====
 initializeSupabaseApp();
