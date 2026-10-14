@@ -2594,7 +2594,7 @@ async function loadFarmerData(farmerId) {
 
 async function handleGoogleSignIn() {
   try {
-    const redirectTo = window.location.origin + window.location.pathname;
+    const redirectTo = 'https://mayuu-p.github.io/Mayuu-9408/';
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: {
