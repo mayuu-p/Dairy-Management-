@@ -1620,9 +1620,10 @@ function renderMain() {
   ${modal}`;
 }
 
-function setLanguage(lang) {
+async function setLanguage(lang) {
   state.currentFarmer.language = lang;
-  localStorage.setItem('dairy_currentFarmer', JSON.stringify(state.currentFarmer));
+  const { error } = await supabaseClient.from('dairy_profiles').update({language: lang}).eq('id', state.currentFarmer.id);
+  if (error) console.error('Could not save language preference:', error);
   state.showProfileMenu = false;
   render();
 }
@@ -2346,31 +2347,31 @@ function attachEvents() {
   // Login form
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(loginForm);
       state.rememberMe = document.getElementById('rememberMe')?.checked || false;
-      if (!handleLogin(fd.get('email'), fd.get('password'))) {
-        document.getElementById('authError').textContent = 'Invalid email or password';
-      }
+      const ok = await handleLogin(fd.get('email'), fd.get('password'));
+      if (ok && state.rememberMe) localStorage.setItem('dairy_remembered', JSON.stringify({email: fd.get('email')}));
+      else localStorage.removeItem('dairy_remembered');
     });
   }
 
   // Register form
   const registerForm = document.getElementById('registerForm');
   if (registerForm) {
-    registerForm.addEventListener('submit', (e) => {
+    registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(registerForm);
       if (fd.get('password') !== fd.get('confirmPassword')) {
-        document.getElementById('authError').textContent = 'Passwords do not match';
+        showAuthMessage('Passwords do not match');
         return;
       }
-      handleRegister({
+      const result = await handleRegister({
         name: fd.get('name'), email: fd.get('email'), password: fd.get('password'),
-        phone: fd.get('phone')||'', address: fd.get('address')||'', farmName: fd.get('farmName')
+        phone: fd.get('phone') || '', address: fd.get('address') || '', farmName: fd.get('farmName')
       });
-      if (result !== true) document.getElementById('authError').textContent = result;
+      if (result !== true) showAuthMessage(result);
     });
   }
 
